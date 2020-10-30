@@ -3,7 +3,7 @@
  * @Author: huxianc
  * @Date: 2020-10-22 15:54:11
  * @LastEditors: huxianc
- * @LastEditTime: 2020-10-23 16:05:17
+ * @LastEditTime: 2020-10-26 17:43:46
 -->
 
 ## 属性的类型
@@ -192,3 +192,32 @@ console.log(Person.prototype instanceof Object); // true
 只要给对象实例添加一个属性，这个属性就会遮蔽（shadow）原型对象上的同名属性，也就是虽然不会修改它，但会屏蔽对它的访问。即使在实例上把这个属性设置为 null，也不会恢复它和原型的联系。不过，使用 delete 操作符可以完全删除实例上的这个属性，从而让标识符解析过程能够继续搜索原型对象。
 
 hasOwnProperty 就是用来判断是自身的属性还是原型上的
+
+## 原型的动态性
+
+因为从原型上搜索值的过程是动态的，所以即使实例在修改原型之前已经存在，任何时候对原型对象所做的修改也会在实例上反映出来
+
+```js
+let friend = new Person();
+Person.prototype.sayHi = function () {
+  console.log("hi");
+};
+friend.sayHi(); // "hi"，没问题！
+```
+
+虽然随时能给原型添加属性和方法，并能够立即反映在所有对象实例上，但这跟重写整个原型是两回事。实例的[[Prototype]]指针是在调用构造函数时自动赋值的，这个指针即使把原型修改为不同的对象也不会变。重写整个原型会切断最初原型与构造函数的联系，但实例引用的仍然是最初的原型。记住，实例只有指向原型的指针，没有指向构造函数的指针。
+
+```js
+function Person() {}
+let friend = new Person();
+Person.prototype = {
+  constructor: Person,
+  name: "Nicholas",
+  age: 29,
+  job: "Software Engineer",
+  sayName() {
+    console.log(this.name);
+  },
+};
+friend.sayName(); // 错误
+```
